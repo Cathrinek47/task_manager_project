@@ -1,6 +1,6 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from .models import *
 from .serializers import *
 from rest_framework.views import APIView
@@ -9,6 +9,28 @@ from django.utils import timezone
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+
+
+#HW14 Реализовать полный CRUD для модели категорий (Categories) с помощью ModelViewSet, добавить кастомный метод для
+# подсчета количества задач в каждой категории
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    @action(detail=False, methods=['get'])
+    def count_tasks(self, request):
+        category_with_tasks_count = Category.objects.annotate(task_count=Count('tasks'))
+
+        data = [
+            {
+                "id": category.id,
+                "category": category.name,
+                "task_count": category.task_count
+            }
+            for category in category_with_tasks_count
+        ]
+        return Response(data)
 
 #hw13.1 Замена представлений для задач (Tasks) на Generic Views
 
