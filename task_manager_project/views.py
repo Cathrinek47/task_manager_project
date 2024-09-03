@@ -6,6 +6,51 @@ from .serializers import *
 from rest_framework.views import APIView
 from django.db.models import Count
 from django.utils import timezone
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
+#hw13.1 Замена представлений для задач (Tasks) на Generic Views
+
+class TaskListCreatetView(ListCreateAPIView):
+    queryset = Task.objects.all()
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    # http://127.0.0.1:8000/tasks/?status=new&deadline=2026-01-01
+
+    filterset_fields = ['status', 'deadline']
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return TaskCreateSerializer
+        return TaskListSerializer
+
+class TasksDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskDetailSerializer
+
+
+
+
+#hw13.1 Замена представлений для подзадач (SubTasks) на Generic Views
+
+class SubTaskListCreatetView(ListCreateAPIView):
+    queryset = SubTask.objects.all()
+    serializer_class = SubTaskCreateSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # http:/ 127.0.0.1:8000/subtasks/?status=In_progress
+    filterset_fields = ['status', 'deadline']
+    # http://127.0.0.1:8000/subtasks/?search=SubTask1
+    search_fields = ['title', 'description']
+    # http://127.0.0.1:8000/subtasks/?ordering
+    ordering_fields = ['created_at']
+
+class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    queryset = SubTask.objects.all()
+    serializer_class = SubTaskSerializer
 
 
 
@@ -90,46 +135,46 @@ class TaskStatisticView(APIView):
 
 #HW12_Task5
 
-class SubTaskListCreateView(APIView):
-    def get(self, request):
-        subtasks = SubTask.objects.all()
-        serializer = SubTaskSerializer(subtasks, many=True)
-        return Response(serializer.data)
-
-
-    def post(self, request):
-        serializer = SubTaskCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class SubTaskDetailUpdateDeleteView(APIView):
-    def get(self, request, pk):
-        try:
-            subtask = SubTask.objects.get(pk=pk)
-        except SubTask.DoesNotExist:
-            return Response({'error': 'Subtask is not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SubTaskCreateSerializer(subtask)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        try:
-            subtask = SubTask.objects.get(pk=pk)
-        except SubTask.DoesNotExist:
-            return Response({'error': 'Subtask is not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SubTaskCreateSerializer(subtask, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        try:
-            subtask = SubTask.objects.get(pk=pk)
-        except SubTask.DoesNotExist:
-            return Response({'error': 'Subtask is not found'}, status=status.HTTP_404_NOT_FOUND)
-        subtask.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+# class SubTaskListCreateView(APIView):
+#     def get(self, request):
+#         subtasks = SubTask.objects.all()
+#         serializer = SubTaskSerializer(subtasks, many=True)
+#         return Response(serializer.data)
+#
+#
+#     def post(self, request):
+#         serializer = SubTaskCreateSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#
+# class SubTaskDetailUpdateDeleteView(APIView):
+#     def get(self, request, pk):
+#         try:
+#             subtask = SubTask.objects.get(pk=pk)
+#         except SubTask.DoesNotExist:
+#             return Response({'error': 'Subtask is not found'}, status=status.HTTP_404_NOT_FOUND)
+#         serializer = SubTaskCreateSerializer(subtask)
+#         return Response(serializer.data)
+#
+#     def put(self, request, pk):
+#         try:
+#             subtask = SubTask.objects.get(pk=pk)
+#         except SubTask.DoesNotExist:
+#             return Response({'error': 'Subtask is not found'}, status=status.HTTP_404_NOT_FOUND)
+#         serializer = SubTaskCreateSerializer(subtask, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def delete(self, request, pk):
+#         try:
+#             subtask = SubTask.objects.get(pk=pk)
+#         except SubTask.DoesNotExist:
+#             return Response({'error': 'Subtask is not found'}, status=status.HTTP_404_NOT_FOUND)
+#         subtask.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+#

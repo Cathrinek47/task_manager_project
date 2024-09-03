@@ -9,10 +9,12 @@ class TaskModelSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'title', 'description', 'status', "deadline"]
 
+
 class SubTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubTask
         fields = '__all__'
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,12 +22,20 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TaskDetailSerializer(serializers.ModelSerializer):
-    # category = CategorySerializer()
-
+class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+
+
+class TaskDetailSerializer(serializers.ModelSerializer):
+    # category = CategorySerializer()
+    # sub_tasks = SubTaskSerializer(many=True, read_only=True)
+    class Meta:
+        model = Task
+        fields = '__all__'
+
+
 
 #HW12
 #Task1
@@ -56,18 +66,19 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class TaskDetailSerializer(serializers.ModelSerializer):
-    subtask = SubTaskSerializer()
+# class TaskDetailSerializer(serializers.ModelSerializer):
+#     subtask = SubTaskSerializer()
+#
+#     class Meta:
+#         model = Task
+#         fields = '__all__'
+
+#Task 4
+class TaskCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
         fields = '__all__'
-
-#Task 4
-class TaskCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Task
-        fields ='__all__'
 
     def validate_deadline(self, data):
         if data < timezone.now():
