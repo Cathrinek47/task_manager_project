@@ -8,6 +8,8 @@ router.register(r'categories', CategoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('api/login/', LoginView.as_view(), name='login'),
+    path('api/logout/', LogoutView.as_view(), name='logout'),
     path('tasks/', TaskListCreatetView.as_view(), name='tasks_list_create'),
     path('tasks/status/', get_tasks_filtered, name='filter_tasks'),
     path('tasks/statistic/', TaskStatisticView.as_view(), name='task-stats'),
