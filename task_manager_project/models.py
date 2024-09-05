@@ -1,3 +1,4 @@
+from rest_framework.authtoken.admin import User
 from django.db import models
 
 
@@ -15,6 +16,7 @@ class Task(models.Model):
     status = models.CharField(max_length=50, null=True, choices=STATUSES_CHOICES, default='New')
     deadline = models.DateTimeField(verbose_name='Дата и время дедлайна')
     created_at = models.DateField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='tasks')
 
     def __str__(self):
         return f'Задача для выполнения: {self.title}'
@@ -41,6 +43,7 @@ class SubTask(models.Model):
     status = models.CharField(max_length=50, choices=STATUSES_CHOICES, default='New')
     deadline = models.DateTimeField(verbose_name='Дата и время дедлайна')
     created_at = models.DateField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='subtasks')
 
     def __str__(self):
         return f'Отдельная часть основной задачи: {self.title}'

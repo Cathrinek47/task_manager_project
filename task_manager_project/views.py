@@ -2,18 +2,37 @@ from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from .models import *
+from .permissions import IsOwnerOrReadOnly
 from .serializers import *
 from datetime import datetime
 from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from django.db.models import Count
 from django.utils import timezone
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 
+
+#hw16 Реализовать авторизацию с извлечением текущего пользователя из запроса и применение разрешений на уровне объектов.
+#Настроить и интегрировать Swagger для автоматической генерации документации API.
+
+class UserTaskListView(ListAPIView):
+    serializer_class = TaskListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user)
+
+
+class UserSubTaskListView(ListAPIView):
+    serializer_class = SubTaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return SubTask.objects.filter(owner=self.request.user)
 
 #HW15Настроить JWT (JSON Web Token) аутентификацию с использованием SimpleJWT и реализовать пермишены для защиты API.
 # Убедитесь, что только авторизованные пользователи могут выполнять определённые действия.
@@ -97,7 +116,7 @@ class TaskListCreatetView(ListCreateAPIView):
     filterset_fields = ['status', 'deadline']
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -107,7 +126,7 @@ class TaskListCreatetView(ListCreateAPIView):
 class TasksDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 
@@ -124,13 +143,13 @@ class SubTaskListCreatetView(ListCreateAPIView):
     search_fields = ['title', 'description']
     # http://127.0.0.1:8000/subtasks/?ordering
     ordering_fields = ['created_at']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 class SubTaskDetailUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 
@@ -202,7 +221,7 @@ def get_tasks_filtered(request):
 # задач по каждому статусу и количество просроченных задач.
 
 class TaskStatisticView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         total_tasks = Task.objects.count()
         status_counts = Task.objects.values('status').annotate(count=Count('status'))
